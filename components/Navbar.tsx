@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ADMIN_EMAIL } from '@/lib/constants'
 
@@ -9,8 +9,22 @@ interface NavbarProps {
   userEmail: string | null
 }
 
+const USER_LINKS = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Tasks', href: '/tasks' },
+  { label: 'Profile', href: '/profile' },
+  { label: 'Settings', href: '/settings' },
+]
+
+const ADMIN_LINKS = [
+  { label: 'Submissions', href: '/admin', highlight: false },
+  { label: 'Tasks', href: '/admin/tasks', highlight: false },
+  { label: '+ Create Task', href: '/admin/tasks/new', highlight: true },
+]
+
 export default function Navbar({ userEmail }: NavbarProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const supabase = createClient()
   const isAdmin = userEmail === ADMIN_EMAIL
 
@@ -20,50 +34,78 @@ export default function Navbar({ userEmail }: NavbarProps) {
     router.refresh()
   }
 
+  function isActive(href: string) {
+    if (href === '/admin') {
+      return pathname === '/admin' || pathname.startsWith('/admin/submissions')
+    }
+    if (href === '/admin/tasks') {
+      return (
+        pathname === '/admin/tasks' ||
+        (pathname.startsWith('/admin/tasks/') &&
+          !pathname.startsWith('/admin/tasks/new'))
+      )
+    }
+    if (href === '/tasks') {
+      return pathname === '/tasks' || pathname.startsWith('/tasks/')
+    }
+    return pathname === href
+  }
+
+  const links = isAdmin ? ADMIN_LINKS : USER_LINKS
+
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          {/* Logo */}
           <Link
-            href={isAdmin ? '/admin' : '/tasks'}
-            className="text-xl font-bold text-brand-600"
+            href={isAdmin ? '/admin' : '/dashboard'}
+            className="text-xl font-bold text-brand-600 shrink-0"
           >
             GradFolio
           </Link>
 
-          <div className="flex items-center gap-6">
-            {!isAdmin && (
-              <>
-                <Link
-                  href="/tasks"
-                  className="text-sm text-gray-600 hover:text-brand-600 font-medium transition-colors"
-                >
-                  Tasks
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-gray-600 hover:text-brand-600 font-medium transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/settings"
-                  className="text-sm text-gray-600 hover:text-brand-600 font-medium transition-colors"
-                >
-                  Settings
-                </Link>
-</>
-            )}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="text-sm text-gray-600 hover:text-brand-600 font-medium transition-colors"
-              >
-                Admin
-              </Link>
-            )}
+          {/* Nav links */}
+          <div className="flex items-center gap-1">
+            {links.map((link) => {
+              const active = isActive(link.href)
 
-            <span className="text-sm text-gray-400 hidden sm:block">
+              if (link.highlight) {
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="ml-2 text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                )
+              }
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-brand-50 text-brand-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-semibold hidden sm:inline">
+                Admin
+              </span>
+            )}
+            <span className="text-sm text-gray-400 hidden md:block truncate max-w-[160px]">
               {userEmail}
             </span>
             <button

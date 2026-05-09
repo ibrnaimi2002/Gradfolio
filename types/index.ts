@@ -2,6 +2,8 @@ export interface Profile {
   id: string
   field: string
   major: string
+  display_name: string | null
+  bio: string | null
   created_at: string
 }
 

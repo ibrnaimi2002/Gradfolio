@@ -3,12 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-const MAJORS_BY_FIELD: Record<string, string[]> = {
-  IT: ['Cybersecurity', 'Data Analysis', 'Software Development'],
-  Business: ['Marketing', 'Finance'],
-  Design: ['Graphic Design', 'UI/UX'],
-}
+import { MAJORS_BY_FIELD } from '@/lib/constants'
 
 interface InitialValues {
   title?: string
