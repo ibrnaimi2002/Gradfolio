@@ -60,7 +60,7 @@ export async function getProfilePageData(userId: string): Promise<{
   ])
 
   const profile = profileResult.data as ProfileRecord | null
-  const allSubmissions = (submissionsResult.data ?? []) as ReviewedSubmission[]
+  const allSubmissions = (submissionsResult.data ?? []) as unknown as ReviewedSubmission[]
 
   const reviewed = allSubmissions.filter(
     (s) => s.status === 'reviewed' && s.review
@@ -90,7 +90,7 @@ export async function getProfilePageData(userId: string): Promise<{
     strongestSkill,
   }
 
-  const skills = [...new Set(reviewed.flatMap((s) => s.task?.skills ?? []))]
+  const skills = Array.from(new Set(reviewed.flatMap((s) => s.task?.skills ?? [])))
   const badges = computeBadges(stats)
 
   return { profile, reviewed, stats, skills, badges }

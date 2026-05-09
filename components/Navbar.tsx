@@ -9,16 +9,22 @@ interface NavbarProps {
   userEmail: string | null
 }
 
-const USER_LINKS = [
+interface NavLink {
+  label: string
+  href: string
+  highlight?: boolean
+}
+
+const USER_LINKS: NavLink[] = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Tasks', href: '/tasks' },
   { label: 'Profile', href: '/profile' },
   { label: 'Settings', href: '/settings' },
 ]
 
-const ADMIN_LINKS = [
-  { label: 'Submissions', href: '/admin', highlight: false },
-  { label: 'Tasks', href: '/admin/tasks', highlight: false },
+const ADMIN_LINKS: NavLink[] = [
+  { label: 'Submissions', href: '/admin' },
+  { label: 'Tasks', href: '/admin/tasks' },
   { label: '+ Create Task', href: '/admin/tasks/new', highlight: true },
 ]
 
