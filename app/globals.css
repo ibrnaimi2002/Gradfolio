@@ -7,4 +7,37 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #C7D2FE;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #818CF8;
+  }
+}
+
+@layer utilities {
+  .progress-fill {
+    transition: width 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card {
+    @apply bg-white border border-gray-100 rounded-2xl shadow-card;
+  }
+
+  .card-hover {
+    @apply hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200;
+  }
+
+  .badge-earned {
+    @apply ring-2 ring-brand-200 ring-offset-1;
+  }
 }

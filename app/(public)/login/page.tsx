@@ -37,50 +37,65 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
-      setInfo(
-        'Account created! Check your email to confirm, then sign in.'
-      )
+      setInfo('Account created! Check your email to confirm, then sign in.')
       setMode('signin')
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="border-b border-gray-100 bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-white flex flex-col">
+
+      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
-          <Link href="/" className="text-xl font-bold text-brand-600">
-            GradFolio
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200">
+              <span className="text-white text-sm font-bold">G</span>
+            </div>
+            <span className="text-base font-bold text-gray-900">
+              Grad<span className="text-brand-600">Folio</span>
+            </span>
           </Link>
         </div>
       </header>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              {mode === 'signin' ? 'Welcome back' : 'Create your account'}
-            </h1>
-            <p className="text-sm text-gray-500 mb-6">
-              {mode === 'signin'
-                ? 'Sign in to access your tasks and dashboard.'
-                : 'Join GradFolio and start proving your skills.'}
-            </p>
+
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/50 p-8">
+            {/* Logo + title */}
+            <div className="text-center mb-8">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mx-auto mb-5 shadow-md">
+                <span className="text-white text-2xl font-bold">G</span>
+              </div>
+              <h1 className="text-2xl font-extrabold text-gray-900">
+                {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+              </h1>
+              <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+                {mode === 'signin'
+                  ? 'Sign in to continue building your portfolio.'
+                  : 'Start proving your skills with real-world tasks.'}
+              </p>
+            </div>
 
             {/* Tab toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+            <div className="flex bg-gray-100 rounded-2xl p-1 mb-7">
               <button
                 onClick={() => { setMode('signin'); setError(''); setInfo('') }}
-                className={`flex-1 text-sm font-medium py-2 rounded-md transition-all ${
-                  mode === 'signin' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`flex-1 text-sm font-semibold py-2.5 rounded-xl transition-all duration-200 ${
+                  mode === 'signin'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setMode('signup'); setError(''); setInfo('') }}
-                className={`flex-1 text-sm font-medium py-2 rounded-md transition-all ${
-                  mode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`flex-1 text-sm font-semibold py-2.5 rounded-xl transition-all duration-200 ${
+                  mode === 'signup'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Sign Up
@@ -88,19 +103,21 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
-                {error}
+              <div className="bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl px-4 py-3 mb-5 flex items-start gap-2.5">
+                <span className="mt-0.5 shrink-0">⚠️</span>
+                <span>{error}</span>
               </div>
             )}
             {info && (
-              <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-4">
-                {info}
+              <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-5 flex items-start gap-2.5">
+                <span className="mt-0.5 shrink-0">✅</span>
+                <span>{info}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Email address
                 </label>
                 <input
@@ -109,11 +126,11 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-150"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Password
                 </label>
                 <input
@@ -123,25 +140,25 @@ export default function LoginPage() {
                   placeholder="Min. 6 characters"
                   required
                   minLength={6}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-150"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white font-semibold py-3 rounded-xl transition-colors text-sm mt-2"
+                className="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white font-bold py-3.5 rounded-xl transition-all text-sm shadow-sm hover:shadow-md mt-2"
               >
                 {loading
-                  ? mode === 'signin'
-                    ? 'Signing in...'
-                    : 'Creating account...'
-                  : mode === 'signin'
-                  ? 'Sign In'
-                  : 'Create Account'}
+                  ? (mode === 'signin' ? 'Signing in...' : 'Creating account...')
+                  : (mode === 'signin' ? 'Sign In' : 'Create Account')}
               </button>
             </form>
           </div>
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            By continuing, you agree to use this platform responsibly.
+          </p>
         </div>
       </div>
     </div>

@@ -14,9 +14,7 @@ interface SubmissionFormProps {
 function extractMessage(err: unknown): string {
   if (!err) return 'Unknown error'
   if (err instanceof Error) return err.message
-  if (typeof err === 'object' && 'message' in err) {
-    return String((err as { message: unknown }).message)
-  }
+  if (typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message)
   return String(err)
 }
 
@@ -26,38 +24,23 @@ export default function SubmissionForm({ task, userId }: SubmissionFormProps) {
   const [content, setContent] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState<{
-    message: string
-    type: 'success' | 'error'
-  } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
 
     try {
-      // Verify the session is still valid before attempting the insert
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
       if (sessionError || !session) {
-        console.error('[SubmissionForm] no active session — redirecting to login')
-        setToast({
-          message: 'Your session has expired. Please sign in again.',
-          type: 'error',
-        })
+        setToast({ message: 'Your session has expired. Please sign in again.', type: 'error' })
         setTimeout(() => router.push('/login'), 1500)
         return
       }
 
-      console.log('[SubmissionForm] session OK — user:', session.user.id)
-      console.log('[SubmissionForm] task.id:', task.id, '| submission_type:', task.submission_type)
-
       let finalContent = content
 
-      // --- File upload ---
       if (task.submission_type === 'file') {
         if (!file) {
           setToast({ message: 'Please select a file to upload.', type: 'error' })
@@ -66,58 +49,34 @@ export default function SubmissionForm({ task, userId }: SubmissionFormProps) {
 
         const ext = file.name.split('.').pop()
         const filePath = `${userId}/${task.id}/${Date.now()}.${ext}`
-        console.log('[SubmissionForm] uploading file to path:', filePath)
 
         const { error: uploadError } = await supabase.storage
           .from('submissions')
           .upload(filePath, file)
 
-        if (uploadError) {
-          console.error('[SubmissionForm] file upload error:', uploadError)
-          throw uploadError
-        }
+        if (uploadError) throw uploadError
 
-        const { data: urlData } = supabase.storage
-          .from('submissions')
-          .getPublicUrl(filePath)
-
+        const { data: urlData } = supabase.storage.from('submissions').getPublicUrl(filePath)
         finalContent = urlData.publicUrl
-        console.log('[SubmissionForm] file uploaded — public URL:', finalContent)
       }
 
-      // --- Validate content ---
       if (!finalContent.trim()) {
         setToast({ message: 'Please provide a submission before submitting.', type: 'error' })
         return
       }
 
-      // --- Insert submission ---
-      const payload = {
-        user_id: userId,
-        task_id: task.id,
-        content: finalContent.trim(),
-        status: 'submitted',
-      }
-      console.log('[SubmissionForm] inserting submission:', payload)
-
-      const { data: insertedRow, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('submissions')
-        .insert(payload)
+        .insert({ user_id: userId, task_id: task.id, content: finalContent.trim(), status: 'submitted' })
         .select()
         .single()
 
-      if (insertError) {
-        console.error('[SubmissionForm] insert error:', insertError)
-        throw insertError
-      }
+      if (insertError) throw insertError
 
-      console.log('[SubmissionForm] submission saved — id:', insertedRow?.id)
-      setToast({ message: 'Submission sent successfully!', type: 'success' })
+      setToast({ message: 'Submission sent! Redirecting to dashboard…', type: 'success' })
       setTimeout(() => router.push('/dashboard'), 1500)
     } catch (err: unknown) {
-      const msg = extractMessage(err)
-      console.error('[SubmissionForm] caught error:', err)
-      setToast({ message: msg, type: 'error' })
+      setToast({ message: extractMessage(err), type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -126,55 +85,55 @@ export default function SubmissionForm({ task, userId }: SubmissionFormProps) {
   return (
     <>
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
+
         {task.submission_type === 'text' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Your Answer
             </label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={8}
-              placeholder="Write your solution here..."
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+              rows={9}
+              placeholder="Write your solution here…"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none bg-gray-50 focus:bg-white transition-all"
               required
             />
+            <p className="text-xs text-gray-400 mt-1.5">
+              {content.length} characters · Be thorough and clear
+            </p>
           </div>
         )}
 
         {task.submission_type === 'link' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Link to your work
             </label>
             <input
               type="url"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="https://..."
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              placeholder="https://…"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              GitHub repo, Figma file, Google Docs, etc.
+            <p className="text-xs text-gray-400 mt-1.5">
+              GitHub repo, Figma file, Google Docs, Notion, etc.
             </p>
           </div>
         )}
 
         {task.submission_type === 'file' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Upload your file
             </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand-400 transition-colors">
+            <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 ${file ? 'border-brand-300 bg-brand-50' : 'border-gray-200 bg-gray-50 hover:border-brand-300 hover:bg-brand-50/50'}`}>
               <input
                 type="file"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -184,18 +143,18 @@ export default function SubmissionForm({ task, userId }: SubmissionFormProps) {
               <label htmlFor="file-upload" className="cursor-pointer block">
                 {file ? (
                   <div>
-                    <p className="text-sm font-medium text-brand-600">
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {(file.size / 1024).toFixed(1)} KB — click to change
+                    <p className="text-2xl mb-2">📎</p>
+                    <p className="text-sm font-bold text-brand-700">{file.name}</p>
+                    <p className="text-xs text-brand-500 mt-1">
+                      {(file.size / 1024).toFixed(1)} KB · Click to change
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm text-gray-600">Click to upload a file</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      PDF, DOCX, PNG, ZIP up to 10MB
+                    <p className="text-3xl mb-3">☁️</p>
+                    <p className="text-sm font-semibold text-gray-700">Click to upload a file</p>
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      PDF, DOCX, PNG, ZIP — max 10 MB
                     </p>
                   </div>
                 )}
@@ -207,10 +166,21 @@ export default function SubmissionForm({ task, userId }: SubmissionFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors text-sm"
+          className="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-gray-100 disabled:text-gray-400 text-white font-bold py-3.5 px-6 rounded-xl transition-all text-sm shadow-sm hover:shadow-md flex items-center justify-center gap-2"
         >
-          {loading ? 'Submitting...' : 'Submit Task'}
+          {loading ? (
+            <>
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Submitting…
+            </>
+          ) : (
+            'Submit Task →'
+          )}
         </button>
+
       </form>
     </>
   )
